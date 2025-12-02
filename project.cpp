@@ -4,11 +4,20 @@ class UserNode{
     int id;
     string username;
     UserNode* next;
-    UserNode* friends;
+    FriendNode* friends;
     public:
-    UserNode(int id, string un){
-        id=id;
+    UserNode(int uid, string un){
+        id=uid;
         username=un;
+        next=nullptr;
+    }
+};
+class FriendNode{
+    UserNode* user;
+    FriendNode* next;
+    FriendNode(UserNode* un){
+        user=un;
+        next=nullptr;
     }
 };
 
