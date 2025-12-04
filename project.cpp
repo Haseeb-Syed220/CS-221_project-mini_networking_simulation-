@@ -3,7 +3,7 @@ using namespace std;
 class UserNode{
     int id;
     string username;
-    FriendNode* friends;
+    FriendList friends;
     public:
      UserNode* next;
     UserNode(int uid, string un){
@@ -13,6 +13,7 @@ class UserNode{
     }
 };
 class FriendNode{
+    public:
     UserNode* user;
     FriendNode* next;
     FriendNode(UserNode* un){
@@ -20,15 +21,41 @@ class FriendNode{
         next=nullptr;
     }
 };
+class FriendList{
+FriendNode* head;
+public:
+FriendList(){
+    head=nullptr;
+}
+void add_friend(UserNode* u){
+    FriendNode* node=new FriendNode(u);
+    if(head==nullptr){
+        head=node;
+        return;
+    }
+    FriendNode* temp=head;
+    while(temp->next!=nullptr)
+    temp=temp->next;
+    temp->next=node;
+}
+int total_friends(){
+    FriendNode* temp=head;
+    int i=0;
+    while(temp){
+        temp=temp->next;
+        i++;
+    }
+    return i;
+}
+};
 class UserList{
 UserNode* head;
-static int count;
 public:
 UserList(){
     head=nullptr;
 }
 void add_user(string un){
-    UserNode* node=new UserNode(count,un);
+    UserNode* node=new UserNode(total_users(),un);
     if(head==nullptr){
         head=node;
         return;
@@ -37,10 +64,18 @@ void add_user(string un){
     while(temp->next!=nullptr)
     temp=temp->next;
     temp->next=node;
-    count++;
+}
+int total_users(){
+    UserNode* temp=head;
+    int i=0;
+    while(temp){
+        temp=temp->next;
+        i++;
+    }
+    return i;
 }
 };
-int UserList::count=0;
+
 int main(){
 
 }
