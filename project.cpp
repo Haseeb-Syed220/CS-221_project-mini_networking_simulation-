@@ -41,8 +41,33 @@ public:
         node->next = head;
         head = node;
     }
-    void remove_friend()
+    void remove_friend(UserNode *myfriend)
     {
+        if (head == nullptr)
+        {
+            return;
+        }
+
+        if (head->user == myfriend)
+        {
+            FriendNode *temp = head;
+            head = head->next;
+            delete temp;
+            return;
+        }
+
+        FriendNode *current = head;
+        while (current->next != nullptr)
+        {
+            if (current->next->user == myfriend)
+            {
+                FriendNode *temp = current->next;
+                current->next = temp->next;
+                delete temp;
+                return;
+            }
+            current = current->next;
+        }
     }
     int total_friends()
     {
@@ -124,6 +149,22 @@ public:
         user2->friends.add_friend(user1);
 
         cout << user1->username << " and " << user2->username << " are now mutual friends!" << endl;
+    }
+    void unfriend(int id1, int id2)
+    {
+        UserNode *user1 = find_user(id1);
+        UserNode *user2 = find_user(id2);
+
+        if (user1 == nullptr || user2 == nullptr)
+        {
+            cout << "Error: One or both users not found." << endl;
+            return;
+        }
+
+        user1->friends.remove_friend(user2);
+        user2->friends.remove_friend(user1);
+
+        cout << user1->username << " and " << user2->username << " are no longer friends." << endl;
     }
 };
 
