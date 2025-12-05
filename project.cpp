@@ -1,81 +1,132 @@
-#include<iostream>
+#include <iostream>
 using namespace std;
-class UserNode{
+struct UserNode
+{
     int id;
     string username;
     FriendList friends;
-    public:
-     UserNode* next;
-    UserNode(int uid, string un){
-        id=uid;
-        username=un;
-        next=nullptr;
+    UserNode *next;
+    UserNode(int uid, string un)
+    {
+        id = uid;
+        username = un;
+        next = nullptr;
     }
 };
-class FriendNode{
-    public:
-    UserNode* user;
-    FriendNode* next;
-    FriendNode(UserNode* un){
-        user=un;
-        next=nullptr;
+struct FriendNode
+{
+    UserNode *user;
+    FriendNode *next;
+    FriendNode(UserNode *un)
+    {
+        user = un;
+        next = nullptr;
     }
 };
-class FriendList{
-FriendNode* head;
+struct PostNode
+{
+};
+class FriendList
+{
+    FriendNode *head;
+
 public:
-FriendList(){
-    head=nullptr;
-}
-void add_friend(UserNode* u){
-    FriendNode* node=new FriendNode(u);
-    if(head==nullptr){
-        head=node;
-        return;
+    FriendList()
+    {
+        head = nullptr;
     }
-    FriendNode* temp=head;
-    while(temp->next!=nullptr)
-    temp=temp->next;
-    temp->next=node;
-}
-int total_friends(){
-    FriendNode* temp=head;
-    int i=0;
-    while(temp){
-        temp=temp->next;
-        i++;
+    void add_friend(UserNode *u)
+    {
+        FriendNode *node = new FriendNode(u);
+        node->next = head;
+        head = node;
     }
-    return i;
-}
+    void remove_friend()
+    {
+    }
+    int total_friends()
+    {
+        FriendNode *temp = head;
+        int i = 0;
+        while (temp)
+        {
+            temp = temp->next;
+            i++;
+        }
+        return i;
+    }
 };
-class UserList{
-UserNode* head;
+class UserList
+{
+    UserNode *head;
+
 public:
-UserList(){
-    head=nullptr;
-}
-void add_user(string un){
-    UserNode* node=new UserNode(total_users(),un);
-    if(head==nullptr){
-        head=node;
-        return;
+    UserList()
+    {
+        head = nullptr;
     }
-    UserNode* temp=head;
-    while(temp->next!=nullptr)
-    temp=temp->next;
-    temp->next=node;
-}
-int total_users(){
-    UserNode* temp=head;
-    int i=0;
-    while(temp){
-        temp=temp->next;
-        i++;
+    void add_user(string un)
+    {
+        UserNode *node = new UserNode(total_users(), un);
+        if (head == nullptr)
+        {
+            head = node;
+            return;
+        }
+        UserNode *temp = head;
+        while (temp->next != nullptr)
+            temp = temp->next;
+        temp->next = node;
     }
-    return i;
-}
+    int total_users()
+    {
+        UserNode *temp = head;
+        int i = 0;
+        while (temp)
+        {
+            temp = temp->next;
+            i++;
+        }
+        return i;
+    }
+    UserNode *find_user(int uid)
+    {
+        UserNode *temp = head;
+        while (temp != nullptr)
+        {
+            if (temp->id == uid)
+            {
+                return temp;
+            }
+            temp = temp->next;
+        }
+        return nullptr;
+    }
+
+    void make_friends(int id1, int id2)
+    {
+        UserNode *user1 = find_user(id1);
+        UserNode *user2 = find_user(id2);
+
+        if (user1 == nullptr || user2 == nullptr)
+        {
+            cout << "Error: One or both users not found." << endl;
+            return;
+        }
+
+        if (id1 == id2)
+        {
+            cout << "Error: A user cannot be friends with themselves." << endl;
+            return;
+        }
+
+        user1->friends.add_friend(user2);
+        user2->friends.add_friend(user1);
+
+        cout << user1->username << " and " << user2->username << " are now mutual friends!" << endl;
+    }
 };
 
-int main(){
-
+int main()
+{
 }
