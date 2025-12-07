@@ -35,8 +35,26 @@ public:
     {
         head = nullptr;
     }
+
+    bool is_friend(UserNode *u)
+    {
+        FriendNode *temp = head;
+
+        while (temp != nullptr)
+        {
+            if (temp->user == u)
+            {
+                return true;
+            }
+            temp = temp->next;
+        }
+
+        return false;
+    }
     void add_friend(UserNode *u)
     {
+        if (is_friend(u))
+            return;
         FriendNode *node = new FriendNode(u);
         node->next = head;
         head = node;
@@ -47,6 +65,8 @@ public:
         {
             return;
         }
+        if (!is_friend(myfriend))
+            return;
 
         if (head->user == myfriend)
         {
@@ -144,6 +164,11 @@ public:
             cout << "Error: A user cannot be friends with themselves." << endl;
             return;
         }
+        if (user1->friends.is_friend(user2))
+        {
+            cout << user1->username << " and " << user2->username << " are already friends!" << endl;
+            return;
+        }
 
         user1->friends.add_friend(user2);
         user2->friends.add_friend(user1);
@@ -158,6 +183,12 @@ public:
         if (user1 == nullptr || user2 == nullptr)
         {
             cout << "Error: One or both users not found." << endl;
+            return;
+        }
+
+        if (!user1->friends.is_friend(user2))
+        {
+            cout << user1->username << " and " << user2->username << " are not friends!" << endl;
             return;
         }
 
