@@ -1,5 +1,8 @@
 #include <iostream>
+#include <string>
+#include <algorithm>
 using namespace std;
+
 struct UserNode
 {
     int id;
@@ -23,8 +26,153 @@ struct FriendNode
         next = nullptr;
     }
 };
-struct PostNode
-{
+
+struct PostNode {
+    int post_id;
+    string content;
+    int height;
+    PostNode *left;
+    PostNode *right;
+
+    PostNode(int id, string c) {
+        post_id = id;
+        content = c;
+        height = 1;
+        left = nullptr;
+        right = nullptr;
+    }
+};
+
+class PostTree {
+private:
+    PostNode *root;
+    int next_post_id = 0;
+
+    void delete_tree(PostNode* node) {
+        if (node != nullptr) {
+            delete_tree(node->left);
+            delete_tree(node->right);
+            delete node;
+        }
+    }
+
+    int get_height(PostNode* node) {
+        if (node == nullptr) {
+            return 0;
+        } else {
+            return node->height;
+        }
+    }
+
+    void update_height(PostNode* node) {
+        if (node != nullptr) {
+            node->height = 1 + max(get_height(node->left), get_height(node->right));
+        }
+    }
+
+    int get_balance_factor(PostNode* node) {
+        if (node == nullptr) {
+            return 0;
+        } else {
+            return get_height(node->left) - get_height(node->right);
+        }
+    }
+    
+    PostNode* rotate_right(PostNode* y) {
+        PostNode* x = y->left;
+        PostNode* T2 = x->right;
+
+        x->right = y;
+        y->left = T2;
+
+        update_height(y);
+        update_height(x);
+
+        return x;
+    }
+
+    PostNode* rotate_left(PostNode* x) {
+        PostNode* y = x->right;
+        PostNode* T2 = y->left;
+
+        y->left = x;
+        x->right = T2;
+
+        update_height(x);
+        update_height(y);
+
+        return y;
+    }
+
+    PostNode* insert_post(PostNode* node, PostNode* new_post) {
+        if (node == nullptr) {
+            return new_post;
+        }
+
+        if (new_post->post_id < node->post_id) {
+            node->left = insert_post(node->left, new_post);
+        } else if (new_post->post_id > node->post_id) {
+            node->right = insert_post(node->right, new_post);
+        } else {
+            return node;
+        }
+
+        update_height(node);
+
+        int balance = get_balance_factor(node);
+
+        if (balance > 1) {
+            if (new_post->post_id < node->left->post_id) {
+                return rotate_right(node);
+            } else {
+                node->left = rotate_left(node->left);
+                return rotate_right(node);
+            }
+        }
+
+        if (balance < -1) {
+            if (new_post->post_id > node->right->post_id) {
+                return rotate_left(node);
+            } else {
+                node->right = rotate_right(node->right);
+                return rotate_left(node);
+            }
+        }
+
+        return node;
+    }
+
+    void display_timeline(PostNode *node) {
+        if (node != nullptr) {
+            display_timeline(node->left); 
+            
+            cout << "    ID " << node->post_id << " | Content: \"" << node->content << "\"" << endl;
+
+            display_timeline(node->right);
+        }
+    }
+    
+public:
+    PostTree() : root(nullptr) {}
+
+    ~PostTree() {
+        delete_tree(root);
+    }
+
+    void insert_post(string content) {
+        PostNode* new_post = new PostNode(next_post_id++, content);
+        root = insert_post(root, new_post);
+    }
+    
+    void display_user_posts() {
+        cout << "\n  --- User Timeline (Sequential ID Order) ---" << endl;
+        if (root == nullptr) {
+            cout << "    No posts available." << endl;
+        } else {
+            display_timeline(root);
+        }
+        cout << "  -------------------------------------------" << endl;
+    }
 };
 class FriendList
 {
@@ -101,6 +249,7 @@ public:
         return i;
     }
 };
+
 class UserList
 {
     UserNode *head;
