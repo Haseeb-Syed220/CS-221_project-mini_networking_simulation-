@@ -8,6 +8,7 @@ struct UserNode
     int id;
     string username;
     FriendList friends;
+    PostTree posts;
     UserNode *next;
     UserNode(int uid, string un)
     {
@@ -27,14 +28,16 @@ struct FriendNode
     }
 };
 
-struct PostNode {
+struct PostNode
+{
     int post_id;
     string content;
     int height;
     PostNode *left;
     PostNode *right;
 
-    PostNode(int id, string c) {
+    PostNode(int id, string c)
+    {
         post_id = id;
         content = c;
         height = 1;
@@ -43,44 +46,58 @@ struct PostNode {
     }
 };
 
-class PostTree {
+class PostTree
+{
 private:
     PostNode *root;
     int next_post_id = 0;
 
-    void delete_tree(PostNode* node) {
-        if (node != nullptr) {
+    void delete_tree(PostNode *node)
+    {
+        if (node != nullptr)
+        {
             delete_tree(node->left);
             delete_tree(node->right);
             delete node;
         }
     }
 
-    int get_height(PostNode* node) {
-        if (node == nullptr) {
+    int get_height(PostNode *node)
+    {
+        if (node == nullptr)
+        {
             return 0;
-        } else {
+        }
+        else
+        {
             return node->height;
         }
     }
 
-    void update_height(PostNode* node) {
-        if (node != nullptr) {
+    void update_height(PostNode *node)
+    {
+        if (node != nullptr)
+        {
             node->height = 1 + max(get_height(node->left), get_height(node->right));
         }
     }
 
-    int get_balance_factor(PostNode* node) {
-        if (node == nullptr) {
+    int get_balance_factor(PostNode *node)
+    {
+        if (node == nullptr)
+        {
             return 0;
-        } else {
+        }
+        else
+        {
             return get_height(node->left) - get_height(node->right);
         }
     }
-    
-    PostNode* rotate_right(PostNode* y) {
-        PostNode* x = y->left;
-        PostNode* T2 = x->right;
+
+    PostNode *rotate_right(PostNode *y)
+    {
+        PostNode *x = y->left;
+        PostNode *T2 = x->right;
 
         x->right = y;
         y->left = T2;
@@ -91,9 +108,10 @@ private:
         return x;
     }
 
-    PostNode* rotate_left(PostNode* x) {
-        PostNode* y = x->right;
-        PostNode* T2 = y->left;
+    PostNode *rotate_left(PostNode *x)
+    {
+        PostNode *y = x->right;
+        PostNode *T2 = y->left;
 
         y->left = x;
         x->right = T2;
@@ -104,16 +122,23 @@ private:
         return y;
     }
 
-    PostNode* insert_post(PostNode* node, PostNode* new_post) {
-        if (node == nullptr) {
+    PostNode *insert_post(PostNode *node, PostNode *new_post)
+    {
+        if (node == nullptr)
+        {
             return new_post;
         }
 
-        if (new_post->post_id < node->post_id) {
+        if (new_post->post_id < node->post_id)
+        {
             node->left = insert_post(node->left, new_post);
-        } else if (new_post->post_id > node->post_id) {
+        }
+        else if (new_post->post_id > node->post_id)
+        {
             node->right = insert_post(node->right, new_post);
-        } else {
+        }
+        else
+        {
             return node;
         }
 
@@ -121,19 +146,27 @@ private:
 
         int balance = get_balance_factor(node);
 
-        if (balance > 1) {
-            if (new_post->post_id < node->left->post_id) {
+        if (balance > 1)
+        {
+            if (new_post->post_id < node->left->post_id)
+            {
                 return rotate_right(node);
-            } else {
+            }
+            else
+            {
                 node->left = rotate_left(node->left);
                 return rotate_right(node);
             }
         }
 
-        if (balance < -1) {
-            if (new_post->post_id > node->right->post_id) {
+        if (balance < -1)
+        {
+            if (new_post->post_id > node->right->post_id)
+            {
                 return rotate_left(node);
-            } else {
+            }
+            else
+            {
                 node->right = rotate_right(node->right);
                 return rotate_left(node);
             }
@@ -142,36 +175,69 @@ private:
         return node;
     }
 
-    void display_timeline(PostNode *node) {
-        if (node != nullptr) {
-            display_timeline(node->left); 
-            
+    void display_timeline(PostNode *node)
+    {
+        if (node != nullptr)
+        {
+            display_timeline(node->left);
+
             cout << "    ID " << node->post_id << " | Content: \"" << node->content << "\"" << endl;
 
             display_timeline(node->right);
         }
     }
-    
+    PostNode *searchp(PostNode *node, int target_id)
+    {
+        if (node == nullptr)
+        {
+            return nullptr;
+        }
+
+        if (target_id == node->post_id)
+        {
+            return node;
+        }
+
+        if (target_id < node->post_id)
+        {
+            return searchp(node->left, target_id);
+        }
+        else
+        {
+            return searchp(node->right, target_id);
+        }
+    }
+
 public:
     PostTree() : root(nullptr) {}
 
-    ~PostTree() {
+    ~PostTree()
+    {
         delete_tree(root);
     }
 
-    void insert_post(string content) {
-        PostNode* new_post = new PostNode(next_post_id++, content);
+    void post(string content)
+    {
+        PostNode *new_post = new PostNode(next_post_id++, content);
         root = insert_post(root, new_post);
     }
-    
-    void display_user_posts() {
+
+    void display_user_posts()
+    {
         cout << "\n  --- User Timeline (Sequential ID Order) ---" << endl;
-        if (root == nullptr) {
+        if (root == nullptr)
+        {
             cout << "    No posts available." << endl;
-        } else {
+        }
+        else
+        {
             display_timeline(root);
         }
         cout << "  -------------------------------------------" << endl;
+    }
+    PostNode *search_post(int post_id)
+    {
+        return searchp(root, post_id);
     }
 };
 class FriendList
@@ -345,6 +411,17 @@ public:
         user2->friends.remove_friend(user1);
 
         cout << user1->username << " and " << user2->username << " are no longer friends." << endl;
+    }
+    void add_post(int uid, string content)
+    {
+        UserNode *user = find_user(uid);
+        if (user == nullptr)
+        {
+            cout << "Error: User with ID " << uid << " not found." << endl;
+            return;
+        }
+        user->posts.post(content);
+        cout << user->username << " posted: \"" << content << "\"" << endl;
     }
 };
 
