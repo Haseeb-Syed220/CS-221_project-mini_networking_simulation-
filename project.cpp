@@ -93,6 +93,15 @@ private:
             return get_height(node->left) - get_height(node->right);
         }
     }
+    PostNode *find_min_value_node(PostNode *node)
+    {
+        PostNode *temp = node;
+        while (temp->left != nullptr)
+        {
+            temp = temp->left;
+        }
+        return temp;
+    }
 
     PostNode *rotate_right(PostNode *y)
     {
@@ -174,6 +183,97 @@ private:
 
         return node;
     }
+    PostNode *remove_post(PostNode *node, int target_id)
+    {
+        if (node == nullptr)
+        {
+            return node;
+        }
+
+        if (target_id < node->post_id)
+        {
+            node->left = remove_post(node->left, target_id);
+        }
+        else if (target_id > node->post_id)
+        {
+            node->right = remove_post(node->right, target_id);
+        }
+        else
+        {
+
+            if (node->left == nullptr || node->right == nullptr)
+            {
+                PostNode *temp_node;
+                if (node->left != nullptr)
+                {
+                    temp_node = node->left;
+                }
+                else
+                {
+                    temp_node = node->right;
+                }
+
+                if (temp_node == nullptr)
+                {
+
+                    temp_node = node;
+                    node = nullptr;
+                }
+                else
+                {
+
+                    *node = *temp_node;
+                }
+                delete temp_node;
+            }
+            else
+            {
+
+                PostNode *temp_node = find_min_value_node(node->right);
+
+                node->post_id = temp_node->post_id;
+                node->content = temp_node->content;
+
+                node->right = remove_post(node->right, temp_node->post_id);
+            }
+        }
+
+        if (node == nullptr)
+        {
+            return node;
+        }
+
+        update_height(node);
+        int balance = get_balance_factor(node);
+
+        if (balance > 1)
+        {
+            if (get_balance_factor(node->left) >= 0)
+            {
+                return rotate_right(node);
+            }
+            else
+            {
+                node->left = rotate_left(node->left);
+                return rotate_right(node);
+            }
+        }
+
+        if (balance < -1)
+        {
+            if (get_balance_factor(node->right) <= 0)
+            {
+                return rotate_left(node);
+            }
+            else
+            {
+                node->right = rotate_right(node->right);
+                return rotate_left(node);
+            }
+        }
+
+        return node;
+    }
 
     void display_timeline(PostNode *node)
     {
@@ -238,6 +338,28 @@ public:
     PostNode *search_post(int post_id)
     {
         return searchp(root, post_id);
+    }
+    bool delete_post(int post_id)
+    {
+        PostNode *initial_search = search_post(post_id);
+
+        if (initial_search == nullptr)
+        {
+            return false;
+        }
+
+        root = remove_post(root, post_id);
+
+        PostNode *final_search = search_post(post_id);
+
+        if (final_search == nullptr)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 };
 class FriendList
