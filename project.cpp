@@ -425,6 +425,22 @@ public:
             current = current->next;
         }
     }
+
+    FriendNode *get_friend_node(int index)
+    {
+        FriendNode *temp = head;
+        int i = 0;
+        while (temp != nullptr)
+        {
+            if (i == index)
+            {
+                return temp;
+            }
+            temp = temp->next;
+            i++;
+        }
+        return nullptr;
+    }
     int total_friends()
     {
         FriendNode *temp = head;
