@@ -545,6 +545,27 @@ public:
         user->posts.post(content);
         cout << user->username << " posted: \"" << content << "\"" << endl;
     }
+    void delete_user_post(int uid, int post_id)
+    {
+        UserNode *user = find_user(uid);
+
+        if (user == nullptr)
+        {
+            cout << "Error: User with ID " << uid << " not found." << endl;
+            return;
+        }
+
+        bool success = user->posts.delete_post(post_id);
+
+        if (success)
+        {
+            cout << user->username << " successfully deleted post ID " << post_id << "." << endl;
+        }
+        else
+        {
+            cout << "Error: Post with ID " << post_id << " not found or failed to delete for user " << user->username << "." << endl;
+        }
+    }
 };
 
 int main()
