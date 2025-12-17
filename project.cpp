@@ -662,9 +662,21 @@ int main()
         }
         else if (choice == 3)
         {
+            cout << "Enter first user ID: ";
+            int a, b;
+            cin >> a;
+            cout << "Enter second user ID: ";
+            cin >> b;
+            users.make_friends(a, b);
         }
         else if (choice == 4)
         {
+            cout << "Enter first user ID: ";
+            int a, b;
+            cin >> a;
+            cout << "Enter second user ID: ";
+            cin >> b;
+            users.unfriend(a, b);
         }
         else if (choice == 5)
         {
