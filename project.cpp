@@ -593,4 +593,70 @@ public:
 
 int main()
 {
+    UserList users;
+
+    int choice = -1;
+    string line;
+
+    while (true)
+    {
+        cout << "\n--- Mini Social Network ---\n";
+        cout << "1. Add user\n";
+        cout << "2. Show all users\n";
+        cout << "3. Make friends\n";
+        cout << "4. Unfriend\n";
+        cout << "5. Add post\n";
+        cout << "6. View user's posts\n";
+        cout << "7. Delete user's post\n";
+        cout << "8. Show user's friends\n";
+        cout << "9. Show friends' posts\n";
+        cout << "0. Exit\n";
+        cout << "Choose an option: ";
+
+        if (!(cin >> choice)) // If by mistake a string is sent as input, the choice parameter will fail to receive it.
+        {
+            cin.clear();        // This will clear the buffer for the string that was unintenionally entered in the place of integer.
+            getline(cin, line); // This receive the string
+            cout << "Invalid input. Try again.\n";
+            continue; // Skip the currently on-going loop to give the user another change to make a choice
+        }
+        getline(cin, line);
+
+        if (choice == 0)
+        {
+        }
+
+        if (choice == 1)
+        {
+        }
+        else if (choice == 2)
+        {
+        }
+        else if (choice == 3)
+        {
+        }
+        else if (choice == 4)
+        {
+        }
+        else if (choice == 5)
+        {
+        }
+        else if (choice == 6)
+        {
+        }
+        else if (choice == 7)
+        {
+        }
+        else if (choice == 8)
+        {
+        }
+        else if (choice == 9)
+        {
+        }
+        else
+        {
+        }
+    }
+
+    return 0;
 }
