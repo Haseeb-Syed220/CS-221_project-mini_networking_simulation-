@@ -624,13 +624,41 @@ int main()
 
         if (choice == 0)
         {
+            cout << "Exiting the premisis....\n";
+            break;
         }
 
         if (choice == 1)
         {
+            cout << "Enter username: ";
+            string username;
+            getline(cin, username);
+            if (username.empty())
+            {
+                cout << "Username cannot be empty.\n";
+                continue;
+            }
+            users.add_user(username);
+            int assigned_id = users.total_users() - 1;
+            cout << "User \"" << username << "\" added with ID " << assigned_id << ".\n";
         }
         else if (choice == 2)
         {
+            int tot = users.total_users();
+            if (tot == 0)
+            {
+                cout << "No users yet.\n";
+                continue;
+            }
+            cout << "All users:\n";
+            for (int i = 0; i < tot; ++i)
+            {
+                UserNode *u = users.find_user(i);
+                if (u != nullptr)
+                {
+                    cout << "  ID: " << u->id << " | Username: " << u->username << '\n';
+                }
+            }
         }
         else if (choice == 3)
         {
