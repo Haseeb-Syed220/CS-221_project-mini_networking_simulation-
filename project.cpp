@@ -3,12 +3,15 @@
 #include <algorithm>
 using namespace std;
 
+class FriendList;
+class PostTree;
+
 struct UserNode
 {
     int id;
     string username;
-    FriendList friends;
-    PostTree posts;
+    FriendList *friends;
+    PostTree *posts;
     UserNode *next;
     UserNode(int uid, string un)
     {
@@ -50,7 +53,7 @@ class PostTree
 {
 private:
     PostNode *root;
-    int next_post_id = 0;
+    int next_post_id = 0; //
 
     void delete_tree(PostNode *node)
     {
@@ -148,10 +151,10 @@ private:
         }
         else
         {
-            return node;
+            return node; // In the case, the current root node matches the node to be inserted, the node itself is returned and there is no change to the tree overall.
         }
 
-        update_height(node);
+        update_height(node); // The height of the node that just got a child (directly) is updated first and then the heights of its parents consecutively.
 
         int balance = get_balance_factor(node);
 
@@ -281,7 +284,7 @@ private:
         {
             display_timeline(node->left);
 
-            cout << "    ID " << node->post_id << " | Content: \"" << node->content << "\"" << endl;
+            cout << "ID: " << node->post_id << " | Content: \"" << node->content << "\"" << endl;
 
             display_timeline(node->right);
         }
@@ -358,6 +361,7 @@ public:
         }
         else
         {
+            cout << "The value was not deleted at all, even after using the remove_post() function.\n";
             return false;
         }
     }
@@ -390,7 +394,10 @@ public:
     void add_friend(UserNode *u)
     {
         if (is_friend(u))
+        {
+            cout << "The user is already a friend.\n";
             return;
+        }
         FriendNode *node = new FriendNode(u);
         node->next = head;
         head = node;
@@ -517,14 +524,14 @@ public:
             cout << "Error: A user cannot be friends with themselves." << endl;
             return;
         }
-        if (user1->friends.is_friend(user2))
+        if (user1->friends->is_friend(user2))
         {
             cout << user1->username << " and " << user2->username << " are already friends!" << endl;
             return;
         }
 
-        user1->friends.add_friend(user2);
-        user2->friends.add_friend(user1);
+        user1->friends->add_friend(user2);
+        user2->friends->add_friend(user1);
 
         cout << user1->username << " and " << user2->username << " are now mutual friends!" << endl;
     }
@@ -539,14 +546,14 @@ public:
             return;
         }
 
-        if (!user1->friends.is_friend(user2))
+        if (!user1->friends->is_friend(user2))
         {
             cout << user1->username << " and " << user2->username << " are not friends!" << endl;
             return;
         }
 
-        user1->friends.remove_friend(user2);
-        user2->friends.remove_friend(user1);
+        user1->friends->remove_friend(user2);
+        user2->friends->remove_friend(user1);
 
         cout << user1->username << " and " << user2->username << " are no longer friends." << endl;
     }
@@ -558,7 +565,7 @@ public:
             cout << "Error: User with ID " << uid << " not found." << endl;
             return;
         }
-        user->posts.post(content);
+        user->posts->post(content);
         cout << user->username << " posted: \"" << content << "\"" << endl;
     }
     void delete_user_post(int uid, int post_id)
@@ -571,7 +578,7 @@ public:
             return;
         }
 
-        bool success = user->posts.delete_post(post_id);
+        bool success = user->posts->delete_post(post_id);
 
         if (success)
         {
