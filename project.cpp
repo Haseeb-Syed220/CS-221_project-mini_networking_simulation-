@@ -18,6 +18,19 @@ struct UserNode
         id = uid;
         username = un;
         next = nullptr;
+        friends = nullptr;
+        posts = nullptr;
+    }
+
+    void ensure_friends_initialized();
+    void ensure_posts_initialized();
+
+    ~UserNode()
+    {
+        if (friends != nullptr)
+            delete friends;
+        if (posts != nullptr)
+            delete posts;
     }
 };
 struct FriendNode
@@ -376,6 +389,17 @@ public:
         head = nullptr;
     }
 
+    ~FriendList()
+    {
+        FriendNode *current = head;
+        while (current != nullptr)
+        {
+            FriendNode *temp = current;
+            current = current->next;
+            delete temp;
+        }
+    }
+
     bool is_friend(UserNode *u)
     {
         FriendNode *temp = head;
@@ -461,6 +485,33 @@ public:
     }
 };
 
+// These are the outline functions that are used to manifest that the FriendList linked list and the Post AVL tree have been initialized.
+void UserNode::ensure_friends_initialized()
+{
+    if (friends == nullptr)
+    {
+        friends = new FriendList();
+        cout << "The FriendList was just created\n";
+    }
+    else
+    {
+        cout << "The FriendList was already created\n";
+    }
+}
+
+void UserNode::ensure_posts_initialized()
+{
+    if (posts == nullptr)
+    {
+        posts = new PostTree();
+        cout << "The PostTree was just created\n";
+    }
+    else
+    {
+        cout << "The PostTree was already created\n";
+    }
+}
+
 class UserList
 {
     UserNode *head;
@@ -524,6 +575,8 @@ public:
             cout << "Error: A user cannot be friends with themselves." << endl;
             return;
         }
+        user1->ensure_friends_initialized();
+        user2->ensure_friends_initialized();
         if (user1->friends->is_friend(user2))
         {
             cout << user1->username << " and " << user2->username << " are already friends!" << endl;
@@ -546,6 +599,8 @@ public:
             return;
         }
 
+        user1->ensure_friends_initialized();
+        user2->ensure_friends_initialized();
         if (!user1->friends->is_friend(user2))
         {
             cout << user1->username << " and " << user2->username << " are not friends!" << endl;
@@ -565,6 +620,7 @@ public:
             cout << "Error: User with ID " << uid << " not found." << endl;
             return;
         }
+        user->ensure_posts_initialized();
         user->posts->post(content);
         cout << user->username << " posted: \"" << content << "\"" << endl;
     }
@@ -578,6 +634,7 @@ public:
             return;
         }
 
+        user->ensure_posts_initialized();
         bool success = user->posts->delete_post(post_id);
 
         if (success)
