@@ -10,13 +10,15 @@ struct UserNode
 {
     int id;
     string username;
+    string password;
     FriendList *friends;
     PostTree *posts;
     UserNode *next;
-    UserNode(int uid, string un)
+    UserNode(int uid, string un, string pwd)
     {
         id = uid;
         username = un;
+        password = pwd;
         next = nullptr;
         friends = nullptr;
         posts = nullptr;
@@ -521,9 +523,9 @@ public:
     {
         head = nullptr;
     }
-    void add_user(string un)
+    void add_user(string un, string pwd)
     {
-        UserNode *node = new UserNode(total_users(), un);
+        UserNode *node = new UserNode(total_users(), un, pwd);
         if (head == nullptr)
         {
             head = node;
@@ -555,6 +557,20 @@ public:
                 return temp;
             }
             temp = temp->next;
+        }
+        return nullptr;
+    }
+
+    UserNode *authenticate(int uid, const string &pw)
+    {
+        UserNode *user = find_user(uid);
+        if (user == nullptr)
+        {
+            return nullptr;
+        }
+        if (user->password == pw)
+        {
+            return user;
         }
         return nullptr;
     }
@@ -648,27 +664,79 @@ public:
     }
 };
 
+UserNode *login_user(UserList &users)
+{
+    int uid;
+    string line;
+    cout << "Enter your user ID: ";
+    if (!(cin >> uid))
+    {
+        cin.clear();
+        getline(cin, line);
+        cout << "Invalid ID.\n";
+        return nullptr;
+    }
+    getline(cin, line); // consume newline
+    cout << "Enter your password: ";
+    string pw;
+    getline(cin, pw);
+
+    UserNode *u = users.authenticate(uid, pw);
+    if (u == nullptr)
+    {
+        cout << "Authentication failed. Invalid ID or password.\n";
+    }
+    else
+    {
+        return u;
+    }
+}
+
 int main()
 {
     UserList users;
 
-    int choice = -1;
+    int status_choice = -1;
     string line;
+
+    cout << "What is your status?\n";
+    cout << "1) CEO of the social networking system\n";
+    cout << "2) Simple user\n";
+    cout << "Enter your choice: ";
+
+    while (!(cin >> status_choice) || (status_choice != 1 && status_choice != 2))
+    {
+        cin.clear();
+        getline(cin, line);
+        cout << "Invalid choice. Please enter 1 or 2: ";
+    }
+    getline(cin, line); // consume leftover newline
+
+    int choice = -1;
 
     while (true)
     {
-        cout << "\n--- Mini Social Network ---\n";
-        cout << "1. Add user\n";
-        cout << "2. Show all users\n";
-        cout << "3. Make friends\n";
-        cout << "4. Unfriend\n";
-        cout << "5. Add post\n";
-        cout << "6. View user's posts\n";
-        cout << "7. Delete user's post\n";
-        cout << "8. Show user's friends\n";
-        cout << "9. Show friends' posts\n";
-        cout << "0. Exit\n";
-        cout << "Choose an option: ";
+        if (status_choice == 1) // CEO menu
+        {
+            cout << "\n--- CEO Menu ---\n";
+            cout << "1. Add user\n";
+            cout << "2. Show all users\n";
+            cout << "3. Show user's friends\n";
+            cout << "4. Show user's posts\n";
+            cout << "0. Exit\n";
+            cout << "Choose an option: ";
+        }
+        else // Simple user menu
+        {
+            cout << "\n--- Mini Social Network ---\n";
+            cout << "1. Make friends\n";
+            cout << "2. Unfriend\n";
+            cout << "3. Add post\n";
+            cout << "4. Delete user's post\n";
+            cout << "5. Show friends' posts\n";
+            cout << "0. Exit\n";
+            cout << "Choose an option: ";
+        }
 
         if (!(cin >> choice)) // If by mistake a string is sent as input, the choice parameter will fail to receive it.
         {
@@ -685,75 +753,112 @@ int main()
             break;
         }
 
-        if (choice == 1)
+        if (status_choice == 1) // CEO choices
         {
-            cout << "Enter username: ";
-            string username;
-            getline(cin, username);
-            if (username.empty())
+            if (choice == 1)
             {
-                cout << "Username cannot be empty.\n";
-                continue;
-            }
-            users.add_user(username);
-            int assigned_id = users.total_users() - 1;
-            cout << "User \"" << username << "\" added with ID " << assigned_id << ".\n";
-        }
-        else if (choice == 2)
-        {
-            int tot = users.total_users();
-            if (tot == 0)
-            {
-                cout << "No users yet.\n";
-                continue;
-            }
-            cout << "All users:\n";
-            for (int i = 0; i < tot; ++i)
-            {
-                UserNode *u = users.find_user(i);
-                if (u != nullptr)
+                cout << "Enter username: ";
+                string username;
+                getline(cin, username);
+                cout << "Set a password for this user: ";
+                string password;
+                getline(cin, password);
+                if (username.empty())
                 {
-                    cout << "  ID: " << u->id << " | Username: " << u->username << '\n';
+                    cout << "Username cannot be empty.\n";
+                    continue;
+                }
+                if (password.empty())
+                {
+                    cout << "Password cannot be empty.\n";
+                    continue;
+                }
+                users.add_user(username, password);
+                int assigned_id = users.total_users() - 1;
+                cout << "User \"" << username << "\" added with ID " << assigned_id << ".\n";
+            }
+            else if (choice == 2)
+            {
+                int tot = users.total_users();
+                if (tot == 0)
+                {
+                    cout << "No users yet.\n";
+                    continue;
+                }
+                else
+                {
+                    cout << "All users:\n";
+                    for (int i = 0; i < tot; ++i)
+                    {
+                        UserNode *u = users.find_user(i);
+                        if (u != nullptr)
+                        {
+                            cout << "  ID: " << u->id << " | Username: " << u->username << '\n';
+                        }
+                    }
                 }
             }
+            else if (choice == 3)
+            {
+                cout << "Enter user ID to view friends: ";
+                int uid;
+                if (!(cin >> uid))
+                {
+                    cin.clear();
+                    getline(cin, line);
+                    cout << "Invalid ID.\n";
+                    continue;
+                }
+                getline(cin, line);
+                UserNode *u = users.find_user(uid);
+                if (u == nullptr)
+                {
+                    cout << "User not found.\n";
+                    continue;
+                }
+                u->ensure_friends_initialized();
+                int n = u->friends->total_friends();
+                if (n == 0)
+                {
+                    cout << u->username << " has no friends.\n";
+                    continue;
+                }
+                cout << u->username << "'s friends:\n";
+                for (int i = 0; i < n; ++i)
+                {
+                    FriendNode *fn = u->friends->get_friend_node(i);
+                    if (fn && fn->user)
+                    {
+                        cout << "  ID: " << fn->user->id << " | Username: " << fn->user->username << '\n';
+                    }
+                }
+            }
+            else if (choice == 4)
+            {
+                cout << "Enter user ID to view posts: ";
+                int uid;
+                if (!(cin >> uid))
+                {
+                    cin.clear();
+                    getline(cin, line);
+                    cout << "Invalid ID.\n";
+                    continue;
+                }
+                getline(cin, line);
+                UserNode *u = users.find_user(uid);
+                if (u == nullptr)
+                {
+                    cout << "User not found.\n";
+                    continue;
+                }
+                u->ensure_posts_initialized();
+                u->posts->display_user_posts();
+            }
+            else
+            {
+                cout << "Unknown option. Try again.\n";
+            }
         }
-        else if (choice == 3)
-        {
-            cout << "Enter first user ID: ";
-            int a, b;
-            cin >> a;
-            cout << "Enter second user ID: ";
-            cin >> b;
-            users.make_friends(a, b);
-        }
-        else if (choice == 4)
-        {
-            cout << "Enter first user ID: ";
-            int a, b;
-            cin >> a;
-            cout << "Enter second user ID: ";
-            cin >> b;
-            users.unfriend(a, b);
-        }
-        else if (choice == 5)
-        {
-        }
-        else if (choice == 6)
-        {
-        }
-        else if (choice == 7)
-        {
-        }
-        else if (choice == 8)
-        {
-        }
-        else if (choice == 9)
-        {
-        }
-        else
-        {
-        }
-    }
 
-    return 0;
-}
+        return 0;
+    }
