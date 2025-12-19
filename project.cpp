@@ -474,6 +474,23 @@ public:
         }
         return nullptr;
     }
+
+    int get_friend_index_by_id(int friend_id)
+    {
+        FriendNode *temp = head;
+        int index = 0;
+        while (temp != nullptr)
+        {
+            if (temp->user != nullptr && temp->user->id == friend_id)
+            {
+                return index;
+            }
+            temp = temp->next;
+            index++;
+        }
+        return -1;
+    }
+
     int total_friends()
     {
         FriendNode *temp = head;
@@ -723,6 +740,7 @@ int main()
             cout << "2. Show all users\n";
             cout << "3. Show user's friends\n";
             cout << "4. Show user's posts\n";
+            cout << "5. Change the status\n";
             cout << "0. Exit\n";
             cout << "Choose an option: ";
         }
@@ -734,6 +752,7 @@ int main()
             cout << "3. Add post\n";
             cout << "4. Delete user's post\n";
             cout << "5. Show friends' posts\n";
+            cout << "6. Change the status\n";
             cout << "0. Exit\n";
             cout << "Choose an option: ";
         }
@@ -854,11 +873,129 @@ int main()
                 u->ensure_posts_initialized();
                 u->posts->display_user_posts();
             }
+            else if (choice == 5)
+            {
+                status_choice = 2;
+            }
             else
             {
                 cout << "Unknown option. Try again.\n";
             }
         }
-
-        return 0;
+        else // Simple user options
+        {
+            if (choice == 1)
+            {
+                UserNode *u1 = login_user(users);
+                if (u1 == nullptr)
+                {
+                    cout << "The account does not exist.\n";
+                    continue;
+                }
+                int a = u1->id;
+                cout << "Enter second user ID to befriend: ";
+                int b;
+                if (!(cin >> b))
+                {
+                    cin.clear();
+                    getline(cin, line);
+                    cout << "Invalid ID.\n";
+                    continue;
+                }
+                getline(cin, line);
+                users.make_friends(a, b);
+            }
+            else if (choice == 2)
+            {
+                UserNode *u1 = login_user(users);
+                if (u1 == nullptr)
+                {
+                    cout << "The account does not exist.\n";
+                    continue;
+                }
+                int a = u1->id;
+                cout << "Enter second user ID to unfriend: ";
+                int b;
+                if (!(cin >> b))
+                {
+                    cin.clear();
+                    getline(cin, line);
+                    cout << "Invalid ID.\n";
+                    continue;
+                }
+                getline(cin, line);
+                users.unfriend(a, b);
+            }
+            else if (choice == 3)
+            {
+                UserNode *u = login_user(users);
+                if (u == nullptr)
+                {
+                    cout << "The account does not exist.\n";
+                    continue;
+                }
+                cout << "Enter post content: ";
+                string content;
+                getline(cin, content);
+                if (content.empty())
+                {
+                    cout << "Empty post not allowed.\n";
+                    continue;
+                }
+                users.add_post(u->id, content);
+            }
+            else if (choice == 4)
+            {
+                UserNode *u = login_user(users);
+                if (u == nullptr)
+                {
+                    cout << "The account does not exist.\n";
+                    continue;
+                }
+                cout << "Enter post number to delete: ";
+                int pid;
+                if (!(cin >> pid))
+                {
+                    cin.clear();
+                    getline(cin, line);
+                    cout << "Invalid post ID.\n";
+                    continue;
+                }
+                getline(cin, line);
+                users.delete_user_post(u->id, pid);
+            }
+            else if (choice == 5)
+            {
+                UserNode *u = login_user(users);
+                if (u == nullptr)
+                {
+                    cout << "The account does not exist.\n";
+                    continue;
+                }
+                u->ensure_friends_initialized();
+                int n = u->friends->total_friends();
+                if (n == 0)
+                {
+                    cout << u->username << " has no friends.\n";
+                    continue;
+                }
+                int friend_id;
+                cout << "Enter the ID of the friend whose post you want to view: ";
+                cin >> friend_id;
+                UserNode *u2 = u->friends->get_friend_node(u->friends->get_friend_index_by_id(friend_id))->user;
+                cout << "Posts from " << u->username << "'s friends:\n";
+                u2->ensure_posts_initialized();
+                u2->posts->display_user_posts();
+            }
+            else if (choice == 6)
+            {
+                status_choice = 1;
+            }
+            else
+            {
+                cout << "Unknown option. Try again.\n";
+            }
+        }
     }
+    return 0;
+}
