@@ -1167,7 +1167,6 @@ UserNode *login_user(UserList &users)
         return u;
     }
 }
-
 int main()
 {
     UserList users;
@@ -1201,6 +1200,7 @@ int main()
             cout << "4. Show user's posts\n";
             cout << "5. Display friendship adjacency matrix\n";
             cout << "6. Change the status\n";
+            cout << "7. Find shortest path between two users\n"; 
             cout << "0. Exit\n";
             cout << "Choose an option: ";
         }
@@ -1216,6 +1216,7 @@ int main()
             cout << "7. View messages with a friend\n";
             cout << "8. View all my messages\n";
             cout << "9. Change the status\n";
+            cout << "10. Find shortest path between two users\n"; 
             cout << "0. Exit\n";
             cout << "Choose an option: ";
         }
@@ -1343,6 +1344,29 @@ int main()
             else if (choice == 6)
             {
                 status_choice = 2;
+            }
+            else if (choice == 7) // <<-- ADDED: CEO shortest-path handler
+            {
+                cout << "Enter source user ID: ";
+                int src_id;
+                if (!(cin >> src_id))
+                {
+                    cin.clear();
+                    getline(cin, line);
+                    cout << "Invalid ID.\n";
+                    continue;
+                }
+                cout << "Enter destination user ID: ";
+                int dest_id;
+                if (!(cin >> dest_id))
+                {
+                    cin.clear();
+                    getline(cin, line);
+                    cout << "Invalid ID.\n";
+                    continue;
+                }
+                getline(cin, line);
+                users.print_shortest_path(src_id, dest_id);
             }
             else
             {
@@ -1516,6 +1540,29 @@ int main()
             {
                 status_choice = 1;
             }
+            else if (choice == 10) // <<-- ADDED: Simple-user shortest-path handler
+            {
+                cout << "Enter source user ID: ";
+                int src_id;
+                if (!(cin >> src_id))
+                {
+                    cin.clear();
+                    getline(cin, line);
+                    cout << "Invalid ID.\n";
+                    continue;
+                }
+                cout << "Enter destination user ID: ";
+                int dest_id;
+                if (!(cin >> dest_id))
+                {
+                    cin.clear();
+                    getline(cin, line);
+                    cout << "Invalid ID.\n";
+                    continue;
+                }
+                getline(cin, line);
+                users.print_shortest_path(src_id, dest_id);
+            }
             else
             {
                 cout << "Unknown option. Try again.\n";
@@ -1523,3 +1570,4 @@ int main()
         }
         return 0;
     }
+}
