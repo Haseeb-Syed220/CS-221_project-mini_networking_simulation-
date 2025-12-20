@@ -402,54 +402,67 @@ public:
         }
     }
 };
-struct HashNode {
+struct HashNode
+{
     int key;
-    UserNode* value;
-    HashNode* next;
+    UserNode *value;
+    HashNode *next;
 
-    HashNode(int k, UserNode* v) {
+    HashNode(int k, UserNode *v)
+    {
         key = k;
         value = v;
         next = nullptr;
     }
 };
 
-class UserHashMap {
+class UserHashMap
+{
 private:
     static const int TABLE_SIZE = 100;
-    HashNode* table[TABLE_SIZE];
+    HashNode *table[TABLE_SIZE];
 
-    int hash_function(int key) {
+    int hash_function(int key)
+    {
         return key % TABLE_SIZE;
     }
 
 public:
-    UserHashMap() {
+    UserHashMap()
+    {
         int i = 0;
-        while (i < TABLE_SIZE) {
+        while (i < TABLE_SIZE)
+        {
             table[i] = nullptr;
             i++;
         }
     }
 
-    void insert(int key, UserNode* value) {
+    void insert(int key, UserNode *value)
+    {
         int index = hash_function(key);
-        HashNode* new_node = new HashNode(key, value);
-        
-        if (table[index] == nullptr) {
+        HashNode *new_node = new HashNode(key, value);
+
+        if (table[index] == nullptr)
+        {
             table[index] = new_node;
-        } else {
+        }
+        else
+        {
             new_node->next = table[index];
             table[index] = new_node;
         }
     }
 
-    UserNode* get(int key) {
+    UserNode *get(int key)
+    {
         int index = hash_function(key);
-        HashNode* temp = table[index];
-        
-        while (temp != nullptr) {
-            if (temp->key == key) {
+        HashNode *temp = table[index];
+
+        while (temp != nullptr)
+        {
+            if (temp->key == key)
+            {
                 return temp->value;
             }
             temp = temp->next;
@@ -457,12 +470,15 @@ public:
         return nullptr;
     }
 
-    ~UserHashMap() {
+    ~UserHashMap()
+    {
         int i = 0;
-        while (i < TABLE_SIZE) {
-            HashNode* temp = table[i];
-            while (temp != nullptr) {
-                HashNode* to_delete = temp;
+        while (i < TABLE_SIZE)
+        {
+            HashNode *temp = table[i];
+            while (temp != nullptr)
+            {
+                HashNode *to_delete = temp;
                 temp = temp->next;
                 delete to_delete;
             }
@@ -739,6 +755,49 @@ public:
         }
         return i;
     }
+
+    void sort_by_username()
+    {
+        if (head == nullptr || head->next == nullptr)
+        {
+            return; // Empty or single node, no need to sort
+        }
+
+        // Collect all FriendNodes into a vector
+        vector<FriendNode *> nodes;
+        FriendNode *temp = head;
+        while (temp != nullptr)
+        {
+            nodes.push_back(temp);
+            temp = temp->next;
+        }
+
+        // Sort by username using bubble sort
+        int n = nodes.size();
+        for (int i = 0; i < n - 1; i++)
+        {
+            for (int j = 0; j < n - i - 1; j++)
+            {
+                if (nodes[j]->user != nullptr && nodes[j + 1]->user != nullptr)
+                {
+                    if (nodes[j]->user->username > nodes[j + 1]->user->username)
+                    {
+                        FriendNode *temp = nodes[j];
+                        nodes[j] = nodes[j + 1];
+                        nodes[j + 1] = temp;
+                    }
+                }
+            }
+        }
+
+        // Rebuild the linked list in sorted order
+        head = nodes[0];
+        for (size_t i = 0; i < nodes.size() - 1; i++)
+        {
+            nodes[i]->next = nodes[i + 1];
+        }
+        nodes[nodes.size() - 1]->next = nullptr;
+    }
 };
 
 // These are the outline functions that are used to manifest that the FriendList linked list and the Post AVL tree have been initialized.
@@ -767,46 +826,70 @@ void UserNode::ensure_posts_initialized()
         cout << "The PostTree was already created\n";
     }
 }
-struct QueueNode {
-    UserNode* user;
-    QueueNode* next;
-    QueueNode(UserNode* u) {
+struct QueueNode
+{
+    UserNode *user;
+    QueueNode *next;
+    QueueNode(UserNode *u)
+    {
         user = u;
         next = nullptr;
     }
 };
 
-class UserQueue {
+class UserQueue
+{
 private:
-    QueueNode* front;
-    QueueNode* rear;
+    QueueNode *front;
+    QueueNode *rear;
+
 public:
-    UserQueue() {
+    UserQueue()
+    {
         front = nullptr;
         rear = nullptr;
     }
-    bool empty() {
-        if (front == nullptr) { return true; }
-        else { return false; }
+    bool empty()
+    {
+        if (front == nullptr)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
-    void push(UserNode* u) {
-        QueueNode* node = new QueueNode(u);
-        if (empty()) {
+    void push(UserNode *u)
+    {
+        QueueNode *node = new QueueNode(u);
+        if (empty())
+        {
             front = node;
             rear = node;
-        } else {
+        }
+        else
+        {
             rear->next = node;
             rear = node;
         }
     }
-    void pop() {
-        if (empty()) { return; }
-        QueueNode* temp = front;
+    void pop()
+    {
+        if (empty())
+        {
+            return;
+        }
+        QueueNode *temp = front;
         front = front->next;
         delete temp;
     }
-    UserNode* get_front() {
-        if (empty()) { return nullptr; }
+    UserNode *get_front()
+    {
+        if (empty())
+        {
+            return nullptr;
+        }
         return front->user;
     }
 };
@@ -1048,96 +1131,103 @@ public:
         messages->display_user_messages(user_id);
     }
     vector<int> find_shortest_path(int src_id, int dest_id)
-{
-    vector<int> path;
+    {
+        vector<int> path;
 
-    UserNode* src = find_user(src_id);
-    UserNode* dest = find_user(dest_id);
+        UserNode *src = find_user(src_id);
+        UserNode *dest = find_user(dest_id);
 
-    if (src == nullptr || dest == nullptr)
-        return path;
+        if (src == nullptr || dest == nullptr)
+            return path;
 
-    if (src_id == dest_id) {
-        path.push_back(src_id);
-        return path;
-    }
+        if (src_id == dest_id)
+        {
+            path.push_back(src_id);
+            return path;
+        }
 
-    int total = total_users();
+        int total = total_users();
 
-    vector<bool> visited(total, false);
-    UserQueue q;
-    UserHashMap parent;   // child_id → parent UserNode*
+        vector<bool> visited(total, false);
+        UserQueue q;
+        UserHashMap parent; // child_id → parent UserNode*
 
-    visited[src_id] = true;
-    parent.insert(src_id, nullptr);
-    q.push(src);
+        visited[src_id] = true;
+        parent.insert(src_id, nullptr);
+        q.push(src);
 
-    bool found = false;
+        bool found = false;
 
-    while (!q.empty() && !found) {
-        UserNode* current = q.get_front();
-        q.pop();
+        while (!q.empty() && !found)
+        {
+            UserNode *current = q.get_front();
+            q.pop();
 
-        int u = current->id;
+            int u = current->id;
 
-        for (int v = 0; v < total; v++) {
-            if (!visited[v] && adjacency_matrix->are_friends(u, v)) {
-                UserNode* neighbor = find_user(v);
-                if (neighbor == nullptr)
-                    continue;
+            for (int v = 0; v < total; v++)
+            {
+                if (!visited[v] && adjacency_matrix->are_friends(u, v))
+                {
+                    UserNode *neighbor = find_user(v);
+                    if (neighbor == nullptr)
+                        continue;
 
-                visited[v] = true;
-                parent.insert(v, current);
-                q.push(neighbor);
+                    visited[v] = true;
+                    parent.insert(v, current);
+                    q.push(neighbor);
 
-                if (v == dest_id) {
-                    found = true;
-                    break;
+                    if (v == dest_id)
+                    {
+                        found = true;
+                        break;
+                    }
                 }
             }
         }
-    }
 
-    if (!found)
+        if (!found)
+            return path;
+
+        // Reconstruct path (dest → src)
+        int curr = dest_id;
+        while (true)
+        {
+            path.push_back(curr);
+            UserNode *p = parent.get(curr);
+            if (p == nullptr)
+                break;
+            curr = p->id;
+        }
+
+        reverse(path.begin(), path.end());
         return path;
-
-    // Reconstruct path (dest → src)
-    int curr = dest_id;
-    while (true) {
-        path.push_back(curr);
-        UserNode* p = parent.get(curr);
-        if (p == nullptr)
-            break;
-        curr = p->id;
     }
+    void print_shortest_path(int src_id, int dest_id)
+    {
+        vector<int> path = find_shortest_path(src_id, dest_id);
 
-    reverse(path.begin(), path.end());
-    return path;
-}
-void print_shortest_path(int src_id, int dest_id)
-{
-    vector<int> path = find_shortest_path(src_id, dest_id);
+        if (path.empty())
+        {
+            cout << "No connection path found between user "
+                 << src_id << " and user " << dest_id << ".\n";
+            return;
+        }
 
-    if (path.empty()) {
-        cout << "No connection path found between user "
-             << src_id << " and user " << dest_id << ".\n";
-        return;
+        cout << "Shortest path (" << path.size() - 1 << " hop(s)):\n";
+        for (int i = 0; i < path.size(); i++)
+        {
+            UserNode *u = find_user(path[i]);
+            if (u)
+                cout << "[" << u->id << "] " << u->username;
+            else
+                cout << "[" << path[i] << "] Unknown";
+
+            if (i + 1 < path.size())
+                cout << " -> ";
+        }
+        cout << endl;
     }
-
-    cout << "Shortest path (" << path.size() - 1 << " hop(s)):\n";
-    for (int i = 0; i < path.size(); i++) {
-        UserNode* u = find_user(path[i]);
-        if (u)
-            cout << "[" << u->id << "] " << u->username;
-        else
-            cout << "[" << path[i] << "] Unknown";
-
-        if (i + 1 < path.size())
-            cout << " -> ";
-    }
-    cout << endl;
-}
-
 };
 
 UserNode *login_user(UserList &users)
@@ -1200,7 +1290,7 @@ int main()
             cout << "4. Show user's posts\n";
             cout << "5. Display friendship adjacency matrix\n";
             cout << "6. Change the status\n";
-            cout << "7. Find shortest path between two users\n"; 
+            cout << "7. Find shortest path between two users\n";
             cout << "0. Exit\n";
             cout << "Choose an option: ";
         }
@@ -1216,7 +1306,7 @@ int main()
             cout << "7. View messages with a friend\n";
             cout << "8. View all my messages\n";
             cout << "9. Change the status\n";
-            cout << "10. Find shortest path between two users\n"; 
+            cout << "10. Find shortest path between two users\n";
             cout << "0. Exit\n";
             cout << "Choose an option: ";
         }
@@ -1306,6 +1396,7 @@ int main()
                     cout << u->username << " has no friends.\n";
                     continue;
                 }
+                u->friends->sort_by_username();
                 cout << u->username << "'s friends:\n";
                 for (int i = 0; i < n; ++i)
                 {
@@ -1568,6 +1659,6 @@ int main()
                 cout << "Unknown option. Try again.\n";
             }
         }
-        return 0;
     }
+    return 0;
 }
