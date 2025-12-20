@@ -2,6 +2,8 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <fstream>
+#include <ctime>
 using namespace std;
 
 class FriendList;
@@ -1230,6 +1232,27 @@ public:
     }
 };
 
+void log_action(const string &action)
+{
+    // open the file named exactly "text_file" in append mode
+    ofstream log_file("text_file", ios::app);
+    if (!log_file)
+    {
+        cerr << "Warning: could not open log file 'text_file' for writing.\n";
+        return;
+    }
+
+    time_t now = time(0);
+    char *dt = ctime(&now);
+    string timestamp(dt);
+    if (!timestamp.empty() && timestamp.back() == '\n')
+        timestamp.pop_back(); // remove newline from ctime
+
+    log_file << "[" << timestamp << "] " << action << endl;
+    log_file.flush(); // ensure it's written immediately
+    // file closed automatically when log_file goes out of scope
+}
+
 UserNode *login_user(UserList &users)
 {
     int uid;
@@ -1259,6 +1282,8 @@ UserNode *login_user(UserList &users)
 }
 int main()
 {
+    // ensure log file exists (creates the file if it doesn't)
+    ofstream("text_file", ios::app).close();
     UserList users;
 
     int status_choice = -1;
@@ -1276,6 +1301,10 @@ int main()
         cout << "Invalid choice. Please enter 1 or 2: ";
     }
     getline(cin, line); // consume leftover newline
+    if (status_choice == 1)
+        log_action("Status selected: CEO of the social networking system");
+    else
+        log_action("Status selected: Simple user");
 
     int choice = -1;
 
@@ -1349,6 +1378,7 @@ int main()
                 users.add_user(username, password);
                 int assigned_id = users.total_users() - 1;
                 cout << "User \"" << username << "\" added with ID " << assigned_id << ".\n";
+                log_action("CEO: Added user \"" + username + "\" with ID " + to_string(assigned_id));
             }
             else if (choice == 2)
             {
@@ -1370,6 +1400,7 @@ int main()
                         }
                     }
                 }
+                log_action("CEO: Viewed all users (Total: " + to_string(tot) + ")");
             }
             else if (choice == 3)
             {
@@ -1406,6 +1437,7 @@ int main()
                         cout << "  ID: " << fn->user->id << " | Username: " << fn->user->username << '\n';
                     }
                 }
+                log_action("CEO: Viewed friends of user ID " + to_string(uid) + " (" + u->username + ")");
             }
             else if (choice == 4)
             {
@@ -1427,14 +1459,17 @@ int main()
                 }
                 u->ensure_posts_initialized();
                 u->posts->display_user_posts();
+                log_action("CEO: Viewed posts of user ID " + to_string(uid) + " (" + u->username + ")");
             }
             else if (choice == 5)
             {
                 users.display_adjacency_matrix();
+                log_action("CEO: Displayed friendship adjacency matrix");
             }
             else if (choice == 6)
             {
                 status_choice = 2;
+                log_action("CEO: Changed status to Simple user");
             }
             else if (choice == 7) // <<-- ADDED: CEO shortest-path handler
             {
@@ -1458,6 +1493,7 @@ int main()
                 }
                 getline(cin, line);
                 users.print_shortest_path(src_id, dest_id);
+                log_action("CEO: Found shortest path between user ID " + to_string(src_id) + " and user ID " + to_string(dest_id));
             }
             else
             {
@@ -1486,6 +1522,9 @@ int main()
                 }
                 getline(cin, line);
                 users.make_friends(a, b);
+                UserNode *u2 = users.find_user(b);
+                if (u2 != nullptr)
+                    log_action("User: User ID " + to_string(a) + " made friends with User ID " + to_string(b));
             }
             else if (choice == 2)
             {
@@ -1507,6 +1546,9 @@ int main()
                 }
                 getline(cin, line);
                 users.unfriend(a, b);
+                UserNode *u2 = users.find_user(b);
+                if (u2 != nullptr)
+                    log_action("User: User ID " + to_string(a) + " unfriended User ID " + to_string(b));
             }
             else if (choice == 3)
             {
@@ -1525,6 +1567,7 @@ int main()
                     continue;
                 }
                 users.add_post(u->id, content);
+                log_action("User: User ID " + to_string(u->id) + " (" + u->username + ") added a post");
             }
             else if (choice == 4)
             {
@@ -1545,6 +1588,7 @@ int main()
                 }
                 getline(cin, line);
                 users.delete_user_post(u->id, pid);
+                log_action("User: User ID " + to_string(u->id) + " (" + u->username + ") deleted post ID " + to_string(pid));
             }
             else if (choice == 5)
             {
@@ -1568,6 +1612,8 @@ int main()
                 cout << "Posts from " << u->username << "'s friends:\n";
                 u2->ensure_posts_initialized();
                 u2->posts->display_user_posts();
+                if (u2 != nullptr)
+                    log_action("User: User ID " + to_string(u->id) + " viewed posts of friend ID " + to_string(friend_id));
             }
             else if (choice == 6)
             {
@@ -1596,6 +1642,7 @@ int main()
                     continue;
                 }
                 users.send_message(sender->id, receiver_id, message_content);
+                log_action("User: User ID " + to_string(sender->id) + " sent a message to User ID " + to_string(receiver_id));
             }
             else if (choice == 7)
             {
@@ -1616,6 +1663,7 @@ int main()
                 }
                 getline(cin, line);
                 users.view_messages_between(u1->id, friend_id);
+                log_action("User: User ID " + to_string(u1->id) + " viewed messages with User ID " + to_string(friend_id));
             }
             else if (choice == 8)
             {
