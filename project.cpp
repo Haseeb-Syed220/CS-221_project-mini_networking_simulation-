@@ -35,6 +35,7 @@ struct UserNode
             delete posts;
     }
 };
+
 struct FriendNode
 {
     UserNode *user;
@@ -64,6 +65,49 @@ struct PostNode
     }
 };
 
+struct QueueNode {
+    UserNode* user;
+    QueueNode* next;
+    QueueNode(UserNode* u) {
+        user = u;
+        next = nullptr;
+    }
+};
+
+class UserQueue {
+private:
+    QueueNode* front;
+    QueueNode* rear;
+public:
+    UserQueue() {
+        front = nullptr;
+        rear = nullptr;
+    }
+    bool empty() {
+        if (front == nullptr) { return true; }
+        else { return false; }
+    }
+    void push(UserNode* u) {
+        QueueNode* node = new QueueNode(u);
+        if (empty()) {
+            front = node;
+            rear = node;
+        } else {
+            rear->next = node;
+            rear = node;
+        }
+    }
+    void pop() {
+        if (empty()) { return; }
+        QueueNode* temp = front;
+        front = front->next;
+        delete temp;
+    }
+    UserNode* get_front() {
+        if (empty()) { return nullptr; }
+        return front->user;
+    }
+};
 class PostTree
 {
 private:
