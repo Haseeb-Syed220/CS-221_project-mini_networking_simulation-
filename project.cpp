@@ -1,10 +1,13 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <vector>
 using namespace std;
 
 class FriendList;
 class PostTree;
+class AdjacencyMatrix;
+class MessageList;
 
 struct UserNode
 {
@@ -35,7 +38,6 @@ struct UserNode
             delete posts;
     }
 };
-
 struct FriendNode
 {
     UserNode *user;
@@ -65,49 +67,24 @@ struct PostNode
     }
 };
 
-struct QueueNode {
-    UserNode* user;
-    QueueNode* next;
-    QueueNode(UserNode* u) {
-        user = u;
+struct MessageNode
+{
+    int message_id;
+    int sender_id;
+    int receiver_id;
+    string content;
+    MessageNode *next;
+
+    MessageNode(int mid, int sid, int rid, string c)
+    {
+        message_id = mid;
+        sender_id = sid;
+        receiver_id = rid;
+        content = c;
         next = nullptr;
     }
 };
 
-class UserQueue {
-private:
-    QueueNode* front;
-    QueueNode* rear;
-public:
-    UserQueue() {
-        front = nullptr;
-        rear = nullptr;
-    }
-    bool empty() {
-        if (front == nullptr) { return true; }
-        else { return false; }
-    }
-    void push(UserNode* u) {
-        QueueNode* node = new QueueNode(u);
-        if (empty()) {
-            front = node;
-            rear = node;
-        } else {
-            rear->next = node;
-            rear = node;
-        }
-    }
-    void pop() {
-        if (empty()) { return; }
-        QueueNode* temp = front;
-        front = front->next;
-        delete temp;
-    }
-    UserNode* get_front() {
-        if (empty()) { return nullptr; }
-        return front->user;
-    }
-};
 class PostTree
 {
 private:
@@ -343,7 +320,7 @@ private:
         {
             display_timeline(node->left);
 
-            cout << "ID: " << node->post_id << " | Content: \"" << node->content << "\"" << endl;
+            cout << "Post number: " << node->post_id << " | Content: \"" << node->content << "\"" << endl;
 
             display_timeline(node->right);
         }
@@ -425,6 +402,155 @@ public:
         }
     }
 };
+
+class AdjacencyMatrix
+{
+private:
+    vector<vector<bool>> matrix;
+    int max_users;
+
+public:
+    AdjacencyMatrix(int size) : max_users(size)
+    {
+        matrix.resize(size, vector<bool>(size, false));
+    }
+
+    void add_friendship(int user1_id, int user2_id)
+    {
+        if (user1_id >= 0 && user1_id < max_users && user2_id >= 0 && user2_id < max_users)
+        {
+            matrix[user1_id][user2_id] = true;
+            matrix[user2_id][user1_id] = true;
+        }
+    }
+
+    void remove_friendship(int user1_id, int user2_id)
+    {
+        if (user1_id >= 0 && user1_id < max_users && user2_id >= 0 && user2_id < max_users)
+        {
+            matrix[user1_id][user2_id] = false;
+            matrix[user2_id][user1_id] = false;
+        }
+    }
+
+    bool are_friends(int user1_id, int user2_id)
+    {
+        if (user1_id >= 0 && user1_id < max_users && user2_id >= 0 && user2_id < max_users)
+        {
+            return matrix[user1_id][user2_id];
+        }
+        return false;
+    }
+
+    void expand_matrix(int new_size)
+    {
+        if (new_size > max_users)
+        {
+            int old_size = max_users;
+            max_users = new_size;
+            matrix.resize(new_size);
+            for (int i = 0; i < new_size; i++)
+            {
+                matrix[i].resize(new_size, false);
+            }
+        }
+    }
+
+    void display_matrix(int total_users)
+    {
+        cout << "\n  --- Friendship Adjacency Matrix ---" << endl;
+        cout << "     ";
+        for (int i = 0; i < total_users; i++)
+        {
+            cout << i << " ";
+        }
+        cout << endl;
+        for (int i = 0; i < total_users; i++)
+        {
+            cout << "  " << i << " ";
+            for (int j = 0; j < total_users; j++)
+            {
+                cout << (matrix[i][j] ? "1" : "0") << " ";
+            }
+            cout << endl;
+        }
+        cout << "  ------------------------------------" << endl;
+    }
+};
+
+class MessageList
+{
+private:
+    MessageNode *head;
+    int next_message_id;
+
+public:
+    MessageList() : head(nullptr), next_message_id(0) {}
+
+    ~MessageList()
+    {
+        MessageNode *current = head;
+        while (current != nullptr)
+        {
+            MessageNode *temp = current;
+            current = current->next;
+            delete temp;
+        }
+    }
+
+    void add_message(int sender_id, int receiver_id, string content)
+    {
+        MessageNode *new_message = new MessageNode(next_message_id++, sender_id, receiver_id, content);
+        new_message->next = head;
+        head = new_message;
+    }
+
+    void display_messages_between(int user1_id, int user2_id)
+    {
+        MessageNode *current = head;
+        bool found = false;
+        cout << "\n  --- Messages between User " << user1_id << " and User " << user2_id << " ---" << endl;
+        while (current != nullptr)
+        {
+            if ((current->sender_id == user1_id && current->receiver_id == user2_id) ||
+                (current->sender_id == user2_id && current->receiver_id == user1_id))
+            {
+                cout << "  Message ID: " << current->message_id << " | From User " << current->sender_id
+                     << " to User " << current->receiver_id << ": \"" << current->content << "\"" << endl;
+                found = true;
+            }
+            current = current->next;
+        }
+        if (!found)
+        {
+            cout << "    No messages found." << endl;
+        }
+        cout << "  ------------------------------------------------" << endl;
+    }
+
+    void display_user_messages(int user_id)
+    {
+        MessageNode *current = head;
+        bool found = false;
+        cout << "\n  --- Messages for User " << user_id << " ---" << endl;
+        while (current != nullptr)
+        {
+            if (current->receiver_id == user_id || current->sender_id == user_id)
+            {
+                cout << "  Message ID: " << current->message_id << " | From User " << current->sender_id
+                     << " to User " << current->receiver_id << ": \"" << current->content << "\"" << endl;
+                found = true;
+            }
+            current = current->next;
+        }
+        if (!found)
+        {
+            cout << "    No messages found." << endl;
+        }
+        cout << "  ------------------------------------" << endl;
+    }
+};
+
 class FriendList
 {
     FriendNode *head;
@@ -574,18 +700,76 @@ void UserNode::ensure_posts_initialized()
         cout << "The PostTree was already created\n";
     }
 }
+struct QueueNode {
+    UserNode* user;
+    QueueNode* next;
+    QueueNode(UserNode* u) {
+        user = u;
+        next = nullptr;
+    }
+};
 
+class UserQueue {
+private:
+    QueueNode* front;
+    QueueNode* rear;
+public:
+    UserQueue() {
+        front = nullptr;
+        rear = nullptr;
+    }
+    bool empty() {
+        if (front == nullptr) { return true; }
+        else { return false; }
+    }
+    void push(UserNode* u) {
+        QueueNode* node = new QueueNode(u);
+        if (empty()) {
+            front = node;
+            rear = node;
+        } else {
+            rear->next = node;
+            rear = node;
+        }
+    }
+    void pop() {
+        if (empty()) { return; }
+        QueueNode* temp = front;
+        front = front->next;
+        delete temp;
+    }
+    UserNode* get_front() {
+        if (empty()) { return nullptr; }
+        return front->user;
+    }
+};
 class UserList
 {
     UserNode *head;
+    AdjacencyMatrix *adjacency_matrix;
+    MessageList *messages;
 
 public:
     UserList()
     {
         head = nullptr;
+        adjacency_matrix = new AdjacencyMatrix(1000); // Initialize with capacity for 1000 users
+        messages = new MessageList();
+    }
+
+    ~UserList()
+    {
+        if (adjacency_matrix != nullptr)
+            delete adjacency_matrix;
+        if (messages != nullptr)
+            delete messages;
     }
     void add_user(string un, string pwd)
     {
+        int new_user_count = total_users() + 1;
+        // Expand adjacency matrix if needed
+        adjacency_matrix->expand_matrix(new_user_count);
+
         UserNode *node = new UserNode(total_users(), un, pwd);
         if (head == nullptr)
         {
@@ -663,6 +847,9 @@ public:
         user1->friends->add_friend(user2);
         user2->friends->add_friend(user1);
 
+        // Update adjacency matrix
+        adjacency_matrix->add_friendship(id1, id2);
+
         cout << user1->username << " and " << user2->username << " are now mutual friends!" << endl;
     }
     void unfriend(int id1, int id2)
@@ -686,6 +873,9 @@ public:
 
         user1->friends->remove_friend(user2);
         user2->friends->remove_friend(user1);
+
+        // Update adjacency matrix
+        adjacency_matrix->remove_friendship(id1, id2);
 
         cout << user1->username << " and " << user2->username << " are no longer friends." << endl;
     }
@@ -722,6 +912,73 @@ public:
         {
             cout << "Error: Post with ID " << post_id << " not found or failed to delete for user " << user->username << "." << endl;
         }
+    }
+
+    void display_adjacency_matrix()
+    {
+        int total = total_users();
+        if (total == 0)
+        {
+            cout << "No users available to display adjacency matrix." << endl;
+            return;
+        }
+        adjacency_matrix->display_matrix(total);
+    }
+
+    void send_message(int sender_id, int receiver_id, string content)
+    {
+        UserNode *sender = find_user(sender_id);
+        UserNode *receiver = find_user(receiver_id);
+
+        if (sender == nullptr || receiver == nullptr)
+        {
+            cout << "Error: One or both users not found." << endl;
+            return;
+        }
+
+        if (sender_id == receiver_id)
+        {
+            cout << "Error: A user cannot send a message to themselves." << endl;
+            return;
+        }
+
+        // Check if users are friends using adjacency matrix
+        if (!adjacency_matrix->are_friends(sender_id, receiver_id))
+        {
+            cout << "Error: Users must be friends to send messages. " << sender->username
+                 << " and " << receiver->username << " are not friends." << endl;
+            return;
+        }
+
+        messages->add_message(sender_id, receiver_id, content);
+        cout << "Message sent from " << sender->username << " (ID: " << sender_id
+             << ") to " << receiver->username << " (ID: " << receiver_id << ")." << endl;
+    }
+
+    void view_messages_between(int user1_id, int user2_id)
+    {
+        UserNode *user1 = find_user(user1_id);
+        UserNode *user2 = find_user(user2_id);
+
+        if (user1 == nullptr || user2 == nullptr)
+        {
+            cout << "Error: One or both users not found." << endl;
+            return;
+        }
+
+        messages->display_messages_between(user1_id, user2_id);
+    }
+
+    void view_user_messages(int user_id)
+    {
+        UserNode *user = find_user(user_id);
+        if (user == nullptr)
+        {
+            cout << "Error: User with ID " << user_id << " not found." << endl;
+            return;
+        }
+
+        messages->display_user_messages(user_id);
     }
 };
 
@@ -784,7 +1041,8 @@ int main()
             cout << "2. Show all users\n";
             cout << "3. Show user's friends\n";
             cout << "4. Show user's posts\n";
-            cout << "5. Change the status\n";
+            cout << "5. Display friendship adjacency matrix\n";
+            cout << "6. Change the status\n";
             cout << "0. Exit\n";
             cout << "Choose an option: ";
         }
@@ -796,7 +1054,10 @@ int main()
             cout << "3. Add post\n";
             cout << "4. Delete user's post\n";
             cout << "5. Show friends' posts\n";
-            cout << "6. Change the status\n";
+            cout << "6. Send message to friend\n";
+            cout << "7. View messages with a friend\n";
+            cout << "8. View all my messages\n";
+            cout << "9. Change the status\n";
             cout << "0. Exit\n";
             cout << "Choose an option: ";
         }
@@ -919,6 +1180,10 @@ int main()
             }
             else if (choice == 5)
             {
+                users.display_adjacency_matrix();
+            }
+            else if (choice == 6)
+            {
                 status_choice = 2;
             }
             else
@@ -1033,6 +1298,64 @@ int main()
             }
             else if (choice == 6)
             {
+                UserNode *sender = login_user(users);
+                if (sender == nullptr)
+                {
+                    cout << "The account does not exist.\n";
+                    continue;
+                }
+                cout << "Enter receiver user ID: ";
+                int receiver_id;
+                if (!(cin >> receiver_id))
+                {
+                    cin.clear();
+                    getline(cin, line);
+                    cout << "Invalid ID.\n";
+                    continue;
+                }
+                getline(cin, line);
+                cout << "Enter message content: ";
+                string message_content;
+                getline(cin, message_content);
+                if (message_content.empty())
+                {
+                    cout << "Empty message not allowed.\n";
+                    continue;
+                }
+                users.send_message(sender->id, receiver_id, message_content);
+            }
+            else if (choice == 7)
+            {
+                UserNode *u1 = login_user(users);
+                if (u1 == nullptr)
+                {
+                    cout << "The account does not exist.\n";
+                    continue;
+                }
+                cout << "Enter friend's user ID: ";
+                int friend_id;
+                if (!(cin >> friend_id))
+                {
+                    cin.clear();
+                    getline(cin, line);
+                    cout << "Invalid ID.\n";
+                    continue;
+                }
+                getline(cin, line);
+                users.view_messages_between(u1->id, friend_id);
+            }
+            else if (choice == 8)
+            {
+                UserNode *u = login_user(users);
+                if (u == nullptr)
+                {
+                    cout << "The account does not exist.\n";
+                    continue;
+                }
+                users.view_user_messages(u->id);
+            }
+            else if (choice == 9)
+            {
                 status_choice = 1;
             }
             else
@@ -1040,6 +1363,5 @@ int main()
                 cout << "Unknown option. Try again.\n";
             }
         }
+        return 0;
     }
-    return 0;
-}
