@@ -402,7 +402,74 @@ public:
         }
     }
 };
+struct HashNode {
+    int key;
+    UserNode* value;
+    HashNode* next;
 
+    HashNode(int k, UserNode* v) {
+        key = k;
+        value = v;
+        next = nullptr;
+    }
+};
+
+class UserHashMap {
+private:
+    static const int TABLE_SIZE = 100;
+    HashNode* table[TABLE_SIZE];
+
+    int hash_function(int key) {
+        return key % TABLE_SIZE;
+    }
+
+public:
+    UserHashMap() {
+        int i = 0;
+        while (i < TABLE_SIZE) {
+            table[i] = nullptr;
+            i++;
+        }
+    }
+
+    void insert(int key, UserNode* value) {
+        int index = hash_function(key);
+        HashNode* new_node = new HashNode(key, value);
+        
+        if (table[index] == nullptr) {
+            table[index] = new_node;
+        } else {
+            new_node->next = table[index];
+            table[index] = new_node;
+        }
+    }
+
+    UserNode* get(int key) {
+        int index = hash_function(key);
+        HashNode* temp = table[index];
+        
+        while (temp != nullptr) {
+            if (temp->key == key) {
+                return temp->value;
+            }
+            temp = temp->next;
+        }
+        return nullptr;
+    }
+
+    ~UserHashMap() {
+        int i = 0;
+        while (i < TABLE_SIZE) {
+            HashNode* temp = table[i];
+            while (temp != nullptr) {
+                HashNode* to_delete = temp;
+                temp = temp->next;
+                delete to_delete;
+            }
+            i++;
+        }
+    }
+};
 class AdjacencyMatrix
 {
 private:
