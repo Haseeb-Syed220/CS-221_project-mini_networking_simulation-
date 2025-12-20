@@ -1047,6 +1047,97 @@ public:
 
         messages->display_user_messages(user_id);
     }
+    vector<int> find_shortest_path(int src_id, int dest_id)
+{
+    vector<int> path;
+
+    UserNode* src = find_user(src_id);
+    UserNode* dest = find_user(dest_id);
+
+    if (src == nullptr || dest == nullptr)
+        return path;
+
+    if (src_id == dest_id) {
+        path.push_back(src_id);
+        return path;
+    }
+
+    int total = total_users();
+
+    vector<bool> visited(total, false);
+    UserQueue q;
+    UserHashMap parent;   // child_id → parent UserNode*
+
+    visited[src_id] = true;
+    parent.insert(src_id, nullptr);
+    q.push(src);
+
+    bool found = false;
+
+    while (!q.empty() && !found) {
+        UserNode* current = q.get_front();
+        q.pop();
+
+        int u = current->id;
+
+        for (int v = 0; v < total; v++) {
+            if (!visited[v] && adjacency_matrix->are_friends(u, v)) {
+                UserNode* neighbor = find_user(v);
+                if (neighbor == nullptr)
+                    continue;
+
+                visited[v] = true;
+                parent.insert(v, current);
+                q.push(neighbor);
+
+                if (v == dest_id) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!found)
+        return path;
+
+    // Reconstruct path (dest → src)
+    int curr = dest_id;
+    while (true) {
+        path.push_back(curr);
+        UserNode* p = parent.get(curr);
+        if (p == nullptr)
+            break;
+        curr = p->id;
+    }
+
+    reverse(path.begin(), path.end());
+    return path;
+}
+void print_shortest_path(int src_id, int dest_id)
+{
+    vector<int> path = find_shortest_path(src_id, dest_id);
+
+    if (path.empty()) {
+        cout << "No connection path found between user "
+             << src_id << " and user " << dest_id << ".\n";
+        return;
+    }
+
+    cout << "Shortest path (" << path.size() - 1 << " hop(s)):\n";
+    for (int i = 0; i < path.size(); i++) {
+        UserNode* u = find_user(path[i]);
+        if (u)
+            cout << "[" << u->id << "] " << u->username;
+        else
+            cout << "[" << path[i] << "] Unknown";
+
+        if (i + 1 < path.size())
+            cout << " -> ";
+    }
+    cout << endl;
+}
+
 };
 
 UserNode *login_user(UserList &users)
